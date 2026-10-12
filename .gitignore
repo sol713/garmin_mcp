@@ -11,6 +11,10 @@ build/
 
 # Virtual environments
 .env
+.env.*
+.garminconnect/
+.garminconnect_base64
+garmin_tokens.json
 .venv/
 .uv-cache/
 *.log

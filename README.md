@@ -2,6 +2,52 @@
 
 # Garmin MCP Server
 
+## Garmin Connect 中国区修复版
+
+此 fork 保留原项目的工具功能，并加入已在本机完成认证验证的中国区兼容修复：
+
+- Python 3.12+ 使用 `garminconnect==0.3.4`，让 DI OAuth 选择中国区服务。
+- `--is-cn` / `GARMIN_IS_CN=true` 使用 `.cn` 的移动端 SSO service URL。
+- 保存、恢复 JWT_WEB、CSRF 和 cookie 回退会话，支持仅使用本地 token 启动 MCP。
+- `garmin-mcp-auth --verify --is-cn` 按中国区验证 token。
+
+修复代码基于 [Taxuspt/garmin_mcp PR #268](https://github.com/Taxuspt/garmin_mcp/pull/268)
+及其引用的 [PR #249](https://github.com/Taxuspt/garmin_mcp/pull/249)。原项目的 MIT 许可与作者署名保留。
+
+### 安装与认证
+
+需要 [uv](https://docs.astral.sh/uv/) 和 Python 3.12+。首次认证请在本机终端执行：
+
+```bash
+uvx --python 3.12 --from git+https://github.com/sol713/garmin_mcp@garmin-cn garmin-mcp-auth --is-cn
+```
+
+按提示交互输入邮箱、密码及 MFA 验证码。邮箱和密码无需写入环境配置或文件；
+认证工具保存的 token 位于 `~/.garminconnect` 和 `~/.garminconnect_base64`，仅供当前用户读写。
+Token 不随本仓库发布。
+
+认证后可检查有效性：
+
+```bash
+uvx --python 3.12 --from git+https://github.com/sol713/garmin_mcp@garmin-cn garmin-mcp-auth --verify --is-cn
+```
+
+### Codex MCP 配置
+
+将以下条目加入 `~/.codex/config.toml`，并将 `command` 换成本机 `uvx` 的实际路径
+（可用 `command -v uvx` 查询）。认证完成后重新加载 MCP 配置：
+
+```toml
+[mcp_servers.garmin]
+command = "uvx"
+args = ["--python", "3.12", "--from", "git+https://github.com/sol713/garmin_mcp@garmin-cn", "garmin-mcp"]
+
+[mcp_servers.garmin.env]
+GARMIN_IS_CN = "true"
+```
+
+以下为原项目说明，其默认上游 URL 指向原仓库。使用本修复版时，请采用上面的 fork URL。
+
 This Model Context Protocol (MCP) server connects to Garmin Connect and exposes your fitness and health data to Claude and other MCP-compatible clients.
 
 Garmin's API is accessed via the awesome [python-garminconnect](https://github.com/cyberjunky/python-garminconnect) library.
